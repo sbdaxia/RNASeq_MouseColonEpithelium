@@ -1,0 +1,25 @@
+
+
+
+
+
+Analysis Type:	PANTHER Overrepresentation Test (Released 20181113)
+Annotation Version and Release Date:	GO Ontology database  Released 2018-11-15
+Analyzed List:	upload_1 (Mus musculus)
+Reference List:	Detected_genes.csv (Mus musculus)
+Test Type:	FISHER
+Correction:	BONFERRONI
+Bonferroni count:	2485
+GO molecular function complete	Detected_genes.csv - REFLIST (15296)	upload_1 (2025)	upload_1 (expected)	upload_1 (over/under)	upload_1 (fold Enrichment)	upload_1 (P-value)
+protein kinase binding (GO:0019901)	636	139	84.20	+	1.65	4.21E-04
+kinase binding (GO:0019900)	709	151	93.86	+	1.61	5.03E-04
+protein domain specific binding (GO:0019904)	675	139	89.36	+	1.56	7.99E-03
+enzyme binding (GO:0019899)	1965	387	260.14	+	1.49	3.01E-10
+identical protein binding (GO:0042802)	1527	270	202.16	+	1.34	1.64E-02
+small molecule binding (GO:0036094)	1991	347	263.58	+	1.32	1.79E-03
+anion binding (GO:0043168)	2232	386	295.49	+	1.31	7.37E-04
+ion binding (GO:0043167)	4492	712	594.68	+	1.20	3.45E-04
+catalytic activity (GO:0003824)	4767	743	631.09	+	1.18	1.80E-03
+protein binding (GO:0005515)	7199	1087	953.06	+	1.14	5.62E-05
+binding (GO:0005488)	10129	1446	1340.95	+	1.08	6.51E-03
+Unclassified (UNCLASSIFIED)	1007	86	133.31	-	.65	0.00E00

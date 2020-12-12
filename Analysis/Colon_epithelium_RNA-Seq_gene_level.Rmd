@@ -1,0 +1,714 @@
+---
+title: "Kras colon epithelium RNA-Seq gene level analysis"
+author: "Bing Shui"
+date: "11/29/2018"
+output: 
+  html_document:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Alignmnent and counting of the `fastq` files
+
+This step is performed on the O2 cluster. The `fastq` file quality was checked using FastQC and MultiQC. They are aligned to Ensembl mm10 genome and counted using Salmon pseudoaligner. Output `sf` files were transfered from O2 to local machine for further processing in R.  
+
+## Library loading and set up
+```{r}
+suppressMessages(
+  c(library(DESeq2),
+    library(tximport),
+    library(gridExtra),
+    library(ensembldb),
+    library(EnsDb.Mmusculus.v79),
+    library(grid),
+    library(ggplot2),
+    library(lattice),
+    library(reshape),
+    library(mixOmics),
+    library(gplots),
+    library(RColorBrewer),
+    library(readr),
+    library(dplyr),
+    library(VennDiagram),
+    library(clusterProfiler),
+    library(DOSE),
+    library(org.Mm.eg.db), 
+    library(pathview),
+    library(AnnotationDbi),
+    library(gtools))
+)
+```
+
+## Compile gene count files in DESeq2
+
+Set working directory to the folder that contains only gene count `txt` files
+
+```{r}
+# Generate a tx2gene object for matrix generation
+edb <- EnsDb.Mmusculus.v79 
+transcriptsID <- as.data.frame(transcripts(edb))
+tx2gene <- as.data.frame(cbind(transcriptsID$tx_id, transcriptsID$gene_id))
+
+# Generate DESeqData using the counting result generated using Salmon
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Gene Counts")
+inDir = getwd()
+countFiles = list.files(inDir, pattern=".sf$", full.names = TRUE)
+basename(countFiles)
+names(countFiles) <- c('Fabp_1','Fabp_2','Fabp_3','Fabp_4','KrasG12D_1','KrasG12D_2','KrasG12D_3','KrasG12D_4')
+
+txi.salmon <- tximport(countFiles, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = TRUE)
+
+DESeqsampletable <- data.frame(condition = c('control','control','control','control','experimental','experimental','experimental','experimental'))
+
+DESeqsampletable$gender <- factor(c("F", "M", "M", "M", "F", "F", "F", "M"))
+rownames(DESeqsampletable) <- colnames(txi.salmon$counts)
+
+ddsHTSeq<- DESeqDataSetFromTximport(txi.salmon, DESeqsampletable, ~  gender + condition)
+
+ddsHTSeq_norm <- estimateSizeFactors(ddsHTSeq)
+
+ddsHTSeq_norm <- DESeq(ddsHTSeq_norm)
+ddsHTSeq_analysis <- results(ddsHTSeq_norm, contrast = c("condition", "experimental", "control"))
+ddsHTSeq_analysis <- lfcShrink(ddsHTSeq_norm, contrast = c("condition", "experimental", "control"), res = ddsHTSeq_analysis, type = "normal")
+
+```
+MA plot was generated to inspect the correct shrinkage of LFC.
+```{r}
+DESeq2::plotMA(ddsHTSeq_analysis)
+```
+
+## Quality Inspection of the Gene Count Data
+### Generate raw count table that contains the simple counts of each gene
+Data is transformed and pseudocount is calculated.
+```{r}
+rawCountTable <- as.data.frame(DESeq2::counts(ddsHTSeq_norm, normalize = TRUE))
+pseudoCount = log2(rawCountTable + 1)
+grid.arrange(
+  ggplot(pseudoCount, aes(x= Fabp_1)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_1"), 
+  ggplot(pseudoCount, aes(x= Fabp_2)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_2"),
+  ggplot(pseudoCount, aes(x= Fabp_3)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_3"),
+  ggplot(pseudoCount, aes(x= Fabp_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_4"), nrow = 2)
+  
+grid.arrange(
+  ggplot(pseudoCount, aes(x= KrasG12D_1)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_1"),
+  ggplot(pseudoCount, aes(x= KrasG12D_2)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_2"),
+  ggplot(pseudoCount, aes(x= KrasG12D_3)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_3"),
+  ggplot(pseudoCount, aes(x= KrasG12D_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_4"), nrow = 2)
+```
+
+### Between-sample distribution
+Check on the gene count distribution across all genes.
+```{r}
+#Boxplots
+suppressMessages(df <- melt(pseudoCount, variable_name = "Samples"))
+df <- data.frame(df, Condition = substr(df$Samples,1,4))
+
+ggplot(df, aes(x=Samples, y=value, fill = Condition)) + geom_boxplot() + xlab("") + 
+  ylab(expression(log[2](count+1))) + scale_fill_manual(values = c("#619CFF", "#F564E3")) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+#Histograms and density plots
+ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + ylim(c(0, 0.25)) + 
+  geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
+  theme(legend.position = "top") + xlab(expression(log[2](count+1)))
+```
+### Generate MA plots 
+MA plots are used to check for imbalance in sequencing depth between samples of the same condition. I did not generate MA plot for all library pairs. But the example pairs I selected show that there are imbalance in sequencing depth, but the imbalance is quite random and this is common in RNA-Seq datasets.
+```{r}
+## WT1 vs WT2
+x = pseudoCount[, 1]
+y = pseudoCount[, 2]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "Fabp_1 vs Fabp_2"))
+
+## WT1 vs WT3
+x = pseudoCount[, 1]
+y = pseudoCount[, 3]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "Fabp_1 vs Fabp_3"))
+
+## G12D_1 vs G12D_2
+x = pseudoCount[, 5]
+y = pseudoCount[, 6]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "KrasG12D_1 vs KrasG12D_2"))
+
+## G12D_1 vs G12D_3
+x = pseudoCount[, 5]
+y = pseudoCount[, 7]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "KrasG12D_1 vs KrasG12D_3"))
+```
+
+### Clustering of the sample-to-sample distances
+This is the sanity check step to confirm that under a un-supervised clustering, WT and G12D samples will cluster together. For some reason, the code is giving error when try to plot this heatmap in RStudio, so I created a pdf file that contains the heatmap in the Analysis folder named `Hierchical Clustering.pdf`
+```{r}
+ddsHTSeq_transform <- varianceStabilizingTransformation(ddsHTSeq_norm)
+rawCountTable_transform <- as.data.frame(assay(ddsHTSeq_transform))
+pseudoCount_transform = log2(rawCountTable_transform + 1)
+mat.dist = pseudoCount_transform
+mat.dist = as.matrix(dist(t(mat.dist)))
+mat.dist = mat.dist/max(mat.dist)
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis")
+png('Hierchical_Clustering.png')
+cim(mat.dist, symkey = FALSE, margins = c(6, 6))
+suppressMessages(dev.off())
+```
+
+Final output is following:
+![Hierchical Clustering](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/Hierchical_Clustering.png)
+
+### Principal component plot of the samples
+I performed PCA analysis on all datasets to confirm that samples from the same condition group together. This step has to be performed using `varianceStabelizingTransformed` dataset, so that the high variance in genes with low counts will not skew the data.
+
+The top 500 most variable genes are selected for PCA analysis.
+
+```{r}
+plotPCA(ddsHTSeq_transform, intgroup = "condition", ntop = 500)
+```
+
+# Raw data filtering and Generate the raw count file with all detected genes
+This step removes all genes with 0 counts across all samples, output a `csv` file and also generate a density plot using filtered dataset.
+```{r}
+rawCountTable_no_normalization <- as.data.frame(DESeq2::counts(ddsHTSeq))
+keep <- rowMeans(rawCountTable[,1:4]) > 50 | rowMeans(rawCountTable[,5:8]) > 50
+filterCount <- pseudoCount[keep,]
+df <- melt(filterCount, variable_name = "Samples")
+df <- data.frame(df, Condition = substr(df$Samples,1,4))
+detected_raw_count_norm <- rawCountTable[keep,]
+write.csv(detected_raw_count_norm, "normalized_raw_gene_counts.csv")
+rawCountTable_no_normalization <- rawCountTable_no_normalization[keep,]
+write.csv(rawCountTable_no_normalization, "raw_gene_counts.csv")
+
+
+ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + 
+  geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
+  theme(legend.position = "top") + xlab("pseudocounts")
+```  
+  
+### Output `txt` file for CiberSort
+```{r}
+# annotate gene count list with gene name and write out as txt file for CiberSort
+# Return the Ensembl IDs for a set of genes
+annotations_cs <- AnnotationDbi::select(EnsDb.Mmusculus.v79,
+                                           keys = rownames(detected_raw_count_norm),
+                                           columns = c("GENENAME"),
+                                           keytype = "GENEID")
+
+# Determine the indices for the non-duplicated genes
+non_duplicates_cs <- which(duplicated(annotations_cs$GENENAME) == FALSE)
+
+# Return only the non-duplicated genes using indices
+annotations_cs <- annotations_cs[non_duplicates_cs, ]
+
+# Check number of NAs returned
+is.na(annotations_cs$GENENAME) %>%
+  which() %>%
+  length()
+
+# join the expression data with gene names
+detected_raw_count_norm_cs <- as_tibble(detected_raw_count_norm, rownames = "ENSEMBL_ID")
+detected_raw_count_norm_cs <- inner_join(detected_raw_count_norm_cs,annotations_cs, by=c("ENSEMBL_ID"="GENEID"))
+
+detected_raw_count_norm_cs[,1] <- detected_raw_count_norm_cs[,dim(detected_raw_count_norm_cs)[2]]
+detected_raw_count_norm_cs <- detected_raw_count_norm_cs[,-dim(detected_raw_count_norm_cs)[2]]
+colnames(detected_raw_count_norm_cs)[1] <- "GENEID"
+
+# convert the gene names to all capitalized letters for use in Cibersort
+detected_raw_count_norm_cs$GENEID <- toupper(detected_raw_count_norm_cs$GENEID)
+
+# I need to filter the list for genes that exist in the signature gene list
+# load the LM22 signature gene list
+LM22_signature <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/CiberSort/LM22_signature.csv")
+LM22_signature <- LM22_signature[,1]
+colnames(LM22_signature)[1] <- "GENEID"
+detected_raw_count_norm_cs <- inner_join(detected_raw_count_norm_cs,LM22_signature, by = c("GENEID" = "GENEID"))
+
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/CiberSort")
+write.csv(detected_raw_count_norm_cs, "normalized_raw_gene_counts_for_Cibersort.csv")
+```
+Once the result file is generated and exported as `csv` file, I input it here and perform differential analysis on them.
+```{r}
+cs_result <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/CiberSort/CIBERSORT.Output_Job2.csv")
+
+cs_result <- as.data.frame(cs_result)
+rownames(cs_result) <- cs_result[,1]
+cs_result <- cs_result[,-1]
+cs_result <- t(cs_result)
+cs_result <- cs_result[-c(23,24,25),]
+
+# filter out cells that had 0 count
+keep_cs <- rowSums(cs_result) > 0
+
+# calculate the stats for each cell type with values
+cs_result <- cs_result[keep_cs,]
+
+# Calculate the pvalue using parametric unpaired t test
+p_value_list <- c()
+for (i in 1:dim(cs_result)[1]) {
+  p_value <- t.test(unlist(cs_result[i,5:8]), unlist(cs_result[i,1:4]), paired = FALSE)$p.value
+  p_value_list <- c(p_value_list, p_value)
+}
+cs_result <- cbind(cs_result, p_value_list)
+colnames(cs_result)[9] <- "p_values" 
+
+# calculate the q value using Benjamini Hochberg FDR correction
+q_value_list <- p.adjust(cs_result[,9], method = "BH")
+cs_result <- cbind(cs_result, q_value_list)
+colnames(cs_result)[10] <- "q_values"
+
+# calculate fold change and log fold change
+foldchange_list <- c()
+for (i in 1:dim(cs_result)[1]) {
+  foldchange <- foldchange(mean(unlist(cs_result[i,5:8])), mean(unlist(cs_result[i,1:4])))
+  foldchange_list <- c(foldchange_list, foldchange)
+}
+logfoldchange_list <- foldchange2logratio(foldchange_list)
+cs_result <- cbind(cs_result, foldchange_list, logfoldchange_list)
+colnames(cs_result)[11:12] <- c("foldChange", "LFC")
+
+# output the analysis file
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/CiberSort")
+write.csv(cs_result, "CiberSort_de_analysis.csv")
+```
+
+### Generate file with differential analysis result
+This step generates the analysis file that contains results from differential analysis.
+```{r}
+write.csv(as.data.frame(ddsHTSeq_analysis[keep,]), "Differential Analysis.csv")
+```
+
+### Draw heatmap for transcripts that are significantly dysregulated in KRasG12D samples
+Genes that were not detected were removed from the list. Genes with `padj` < 0.05 were considered significantly dysregulated. Their normalized counts were z-scored and used for plotting the heatmap.
+
+```{r}
+suppressMessages(library(mosaic))
+
+rawCountTable_transform_detected <- rawCountTable_transform[keep,]
+
+dif_analysis <- as.data.frame(ddsHTSeq_analysis)[keep,]
+sig_dif <- subset(dif_analysis, dif_analysis$padj < 0.05)
+sig_index <- c()
+for (i in 1:dim(sig_dif)[1]) {
+  sig_index <- c(sig_index ,grep(rownames(sig_dif)[i], rownames(rawCountTable_transform_detected)))
+}
+sig_count <- rawCountTable_transform_detected[sig_index,]
+sig_dif <- cbind(sig_dif, sig_count)
+for (i in 1:dim(sig_dif)[1]) {
+  sig_dif[i,7:14] <- zscore(as.numeric(sig_dif[i,7:14]))
+}
+
+my_palette <- colorRampPalette(c("red", "white", "blue"))(256)
+heatmap_matrix <- as.matrix(sig_dif[,7:14])
+
+png('G12D vs WT colon epithelium RNASeq.png',
+    width = 600,
+    height = 1400,
+    res = 200,
+    pointsize = 8)
+par(cex.main=1.1)
+heatmap.2(heatmap_matrix,
+          main = "Differentially expressed\nRNA in colon epithelium\npadj < 0.05",
+          density.info = "none",
+          key = TRUE,
+          lwid = c(3,7),
+          lhei = c(1,7),
+          col=my_palette,
+          margins = c(12,2),
+          symbreaks = TRUE,
+          trace = "none",
+          dendrogram = "row",
+          labRow = FALSE,
+          ylab = "Genes",
+          cexCol = 2,
+          Colv = "NA")
+dev.off()
+```
+
+Final output is ![Heatmap for differential genes](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/G12D vs WT colon epithelium RNASeq.png)
+
+### Scatter plot, MA plot and Volcano plot for data visualization
+
+```{r}
+# Scatter plot
+detected_pseudocount <- pseudoCount[keep,]
+dif_analysis$KrasG12D_mean <- rowMeans(detected_pseudocount[,5:8])
+dif_analysis$KrasWT_mean <- rowMeans(detected_pseudocount[,1:4])
+ggplot(dif_analysis, aes(x = KrasWT_mean, y = KrasG12D_mean)) +
+  xlab("WT_Average(log2)") + ylab("G12D_Average(log2)") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "grey") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+  labs(title = "WT vs G12D Scatter Plot")
+
+# MA plot
+ggplot(dif_analysis, aes(x = log(baseMean,2), y = log2FoldChange,)) +
+  xlab("Average Expression") + ylab("LFC") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "grey") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+labs(title = "WT vs G12D MA Plot")
+
+# Volcano Plot
+ggplot(dif_analysis, aes(x = log2FoldChange, y = -log(padj,10))) +
+  xlab("LFC") + ylab("-log10(P value)") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "black") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+labs(title = "WT vs G12D Volcano Plot") +
+  xlim(-3,3)
+
+
+```
+
+### GO analysis for DE genes
+Classic GO analysis is performed here for all DE genes detected in this dataset. The reference list is list of genes detected in RNASeq. Three categories of GO terms are tested here, including biological process, molecular function and cellular component.
+```{r}
+target_gene <- as.character(rownames(sig_dif))
+detected_gene <- as.character(rownames(detected_pseudocount))
+
+# Run GO enrichment analysis for biological process
+ego_BP <- enrichGO(gene = target_gene, 
+                universe = detected_gene,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "BP", 
+                pAdjustMethod = "BH", 
+                pvalueCutoff = 0.05, 
+                readable = TRUE)
+
+# Output results from GO analysis to a table
+cluster_summary_BP <- data.frame(ego_BP)
+
+write.csv(cluster_summary_BP, "GO/GO analysis_BP.csv")
+
+# Run GO enrichment analysis for molecular function 
+ego_MF <- enrichGO(gene = target_gene, 
+                universe = detected_gene,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "MF", 
+                pAdjustMethod = "BH", 
+                pvalueCutoff = 0.05, 
+                readable = TRUE)
+
+# Output results from GO analysis to a table
+cluster_summary_MF <- data.frame(ego_MF)
+
+write.csv(cluster_summary_MF, "GO/GO analysis_MF.csv")
+
+# Run GO enrichment analysis for cellular component 
+ego_CC <- enrichGO(gene = target_gene, 
+                universe = detected_gene,
+                keyType = "ENSEMBL",
+                OrgDb = org.Mm.eg.db, 
+                ont = "CC", 
+                pAdjustMethod = "BH", 
+                pvalueCutoff = 0.05, 
+                readable = TRUE)
+
+# Output results from GO analysis to a table
+cluster_summary_CC <- data.frame(ego_CC)
+
+write.csv(cluster_summary_CC, "GO/GO analysis_CC.csv")
+```
+
+#### Draw Dotplot representing the results
+
+##### Biological process
+```{r}
+png('GO/GO dotplot_BP.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+dotplot(ego_BP, showCategory=50)
+dev.off()
+```
+Final output is following:
+![BP_dotplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO dotplot_BP.png)
+
+##### Molecular function
+
+```{r}
+png('GO/GO dotplot_MF.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+dotplot(ego_MF, showCategory=50)
+dev.off()
+```
+Final output is following:
+![MF_dotplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO dotplot_MF.png)
+
+##### Cellular component
+
+```{r}
+png('GO/GO dotplot_CC.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+dotplot(ego_CC, showCategory=50)
+dev.off()
+```
+Final output is following:
+![CC_dotplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO dotplot_CC.png)
+
+#### Draw enrichment Go plot representing the results
+
+##### Biological process
+
+```{r}
+png('GO/GO enrichment_BP.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+emapplot(ego_BP, showCategory = 50)
+dev.off()
+```
+Final output is following:
+![BP_enrichplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO enrichment_BP.png)
+
+##### Molecular function
+
+```{r}
+png('GO/GO enrichment_MF.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+emapplot(ego_MF, showCategory = 50)
+dev.off()
+```
+Final output is following:
+![MF_enrichplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO enrichment_MF.png)
+
+##### Cellular component
+
+```{r}
+png('GO/GO enrichment_CC.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+emapplot(ego_CC, showCategory = 50)
+dev.off()
+```
+Final output is following:
+![CC_enrichplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO enrichment_CC.png)
+
+
+#### Draw category netplot representing the results
+
+The category netplot shows the relationships between the genes associated with the top five most significant GO terms and the fold changes of the significant genes associated with these terms (color). 
+
+##### Biological process
+
+```{r}
+OE_foldchanges <- sig_dif$log2FoldChange
+names(OE_foldchanges) <- rownames(sig_dif)
+
+png('GO/GO cnetplot_BP.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+cnetplot(ego_BP, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=6)
+dev.off()
+```
+Final output is following:
+![BP_cnetplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO cnetplot_BP.png)
+
+##### Molecular function
+
+```{r}
+png('GO/GO cnetplot_MF.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+cnetplot(ego_MF, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=6)
+dev.off()
+```
+Final output is following:
+![MF_cnetplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO cnetplot_MF.png)
+
+##### Cellular component
+
+```{r}
+png('GO/GO cnetplot_CC.png',
+    width = 1600,
+    height = 1600,
+    res = 100,
+    pointsize = 8)
+cnetplot(ego_CC, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=6)
+dev.off()
+```
+Final output is following:
+![CC_cnetplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO cnetplot_CC.png)
+
+### Overlaping tumor transcriptomics and proteomics
+
+For all proteins that were detected in the scraped colon proteomics, I extracted their Uniprot ID and matched them with Ensembl Gene Stable ID using BioMart on Ensembl. The information is stored in `Uniprot_2_Ensembl.csv`. I am also using the `EnsDb.Mmusculus.v79` package to match Ensembl ID to Uniprot ID. Not sure which one gives me more mathces.
+
+The proteomics file that I am using here is generated by Joao, tissue collect done by Emily and differential analysis done by Doug. The raw quantification file is `2015-03_HaigisMouseColon8plex_Prot`. The differential analysis file is 
+
+```{r}
+Uniprot_2_Ensembl <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/Uniprot_2_Ensembl.csv")
+proteomics_quant <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/Proteomics data/scraped colon/2015-03_HaigisMouseColon8plex_Prot.csv")
+proteomics_diff <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/Proteomics data/scraped colon/ceMS_diff.csv")
+```
+
+This is to annotate the inputs in proteomics quantification file with their corresponding Ensembl ID.
+
+Now I try to match Uniprot to Ensembl ID using `EnsDb.Mmusculus.v79` package
+```{r}
+# Return the Ensembl IDs for a set of genes
+annotations_edb <- AnnotationDbi::select(EnsDb.Mmusculus.v79,
+                                           keys = proteomics_quant$`Protein Id`,
+                                           columns = c("GENEID", "GENENAME"),
+                                           keytype = "UNIPROTID")
+
+# Determine the indices for the non-duplicated genes
+non_duplicates_idx <- which(duplicated(annotations_edb$UNIPROTID) == FALSE)
+non_duplicates_idx <- which(duplicated(annotations_edb$GENEID) == FALSE)
+
+# Return only the non-duplicated genes using indices
+annotations_edb <- annotations_edb[non_duplicates_idx, ]
+
+# Check number of NAs returned
+is.na(annotations_edb$GENEID) %>%
+  which() %>%
+  length()
+```
+Compare BioMart ID conversion output with ID mathcing output from the `EnsDb.Mmusculus.v79` package.
+
+```{r}
+# number of matches using EnsDb.Mmusculus.v79
+dim(annotations_edb)[1]
+
+# number of matches using BioMart
+dim(Uniprot_2_Ensembl)[1]
+
+```
+It seems that matching using the `EnsDb.Mmusculus.v79` and `AnnotationDbi`package is superior. I will use this method for ID conversion in the future.
+
+I need to add the Ensembl ID to the proteomics quantification dataframe.
+```{r}
+proteomics_quant <- as_tibble(proteomics_quant)
+proteomics_diff <- as_tibble(proteomics_diff)
+dif_analysis$GeneID <- rownames(dif_analysis)
+dif_analysis_tib <- as_tibble(dif_analysis)
+proteomics_quant <- inner_join(proteomics_quant, annotations_edb, by=c("Protein Id"="UNIPROTID"))
+proteomics_diff <- inner_join(proteomics_diff, annotations_edb, by=c("Protein Id"="UNIPROTID"))
+```
+
+Then I overlap the Stable Gene IDs in Proteomics with the ones in detected in transcriptomics to find outputs that were detected in both large datasets. For the overlapped proteins, the log fold change for their transcript expression and protein expression were extracted for testing their correlation. 
+
+```{r}
+overlap <- intersect(rownames(detected_raw_count_norm), proteomics_quant$GENEID)
+overlap_lfc <- inner_join(dif_analysis_tib[,c(2,9)], proteomics_diff[,c(8,9)], by=c("GeneID"="GENEID"))
+colnames(overlap_lfc) <- c('rna_lfc', 'GeneID', 'protein_lfc')
+overlap_lfc$rna_lfc <- as.numeric(as.character(overlap_lfc$rna_lfc))
+overlap_lfc$protein_lfc <- as.numeric(as.character(overlap_lfc$protein_lfc))
+
+# Plot scatterplot and calculate the Pearson Correlation
+ggplot(overlap_lfc, aes(x = rna_lfc, y = protein_lfc)) +
+  geom_point(data = overlap_lfc, alpha = 0.5, size = 1, color = "black") +
+  xlab("RNA LFC (KRas/WT)") + ylab("Protein LFC (KRas/WT)") + 
+  labs(title = "Correlation between proteomics and transcriptomics") +
+  xlim(-3,3) + ylim(-3,3)
+
+# Correlation test
+cor.test(overlap_lfc$rna_lfc, overlap_lfc$protein_lfc)
+```
+
+### Zooming into genes/proteins that are dysregulated in transcriptomics and proteomics
+This analysis is performed only on proteins that are detected in both datasets.
+
+```{r}
+overlap_p <- inner_join(dif_analysis_tib[,c(6,9)], proteomics_diff[,c(5,6,9)], by=c("GeneID"="GENEID"))
+colnames(overlap_p) <- c('rna_p', 'GeneID', 'protein_p', 'protein_q')
+overlap_p$rna_p <- as.numeric(as.character(overlap_p$rna_p))
+overlap_p$protein_p <- as.numeric(as.character(overlap_p$protein_p))
+overlap_p$protein_q <- as.numeric(as.character(overlap_p$protein_q))
+```
+
+Making a Venn Diagram to show the overlap between DE genes and DE proteins
+```{r}
+rna_de <- subset(overlap_p, overlap_p$rna_p < 0.05)$GeneID
+protein_de <- subset(overlap_p, overlap_p$protein_p < 0.05 & overlap_p$protein_q < 0.1)$GeneID
+overlap_de <- intersect(rna_de, protein_de)
+grid.newpage()
+draw.pairwise.venn(length(rna_de),
+                   length(protein_de),
+                   length(overlap_de),
+                   catergory <- c("DE_Transcriptomics",
+                                  "DE_Proteomics"),
+                   lty = "blank",
+                   ex.text = FALSE,
+                   fill = c("pink", "lightblue"),
+                   cat.pos = c(200, 135), cat.dist = 0.05, margin = 0.05,
+                   fontfamily = "sans", cat.fontfamily = "sans")
+
+```
+
+
+
+
+
+
+

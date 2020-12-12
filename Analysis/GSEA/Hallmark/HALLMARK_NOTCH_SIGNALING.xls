@@ -1,0 +1,31 @@
+NAME	PROBE	GENE SYMBOL	GENE_TITLE	RANK IN GENE LIST	RANK METRIC SCORE	RUNNING ES	CORE ENRICHMENT	
+row_0	FZD1	FZD1	frizzled homolog 1 (Drosophila)	516	1.2254878282546997	0.062494766	No	
+row_1	TCF7L2	TCF7L2	transcription factor 7-like 2 (T-cell specific, HMG-box)	736	1.073997139930725	0.13250788	No	
+row_2	CUL1	CUL1	cullin 1	1258	0.8408726453781128	0.16447674	No	
+row_3	ST3GAL6	ST3GAL6	ST3 beta-galactoside alpha-2,3-sialyltransferase 6	2321	0.5869988203048706	0.14115022	No	
+row_4	FZD7	FZD7	frizzled homolog 7 (Drosophila)	3681	0.38104212284088135	0.08223943	No	
+row_5	WNT2	WNT2	wingless-type MMTV integration site family member 2	4424	0.3016917109489441	0.057427663	No	
+row_6	APH1A	APH1A	anterior pharynx defective 1 homolog A (C. elegans)	4713	0.26840147376060486	0.059677165	No	
+row_7	DTX1	DTX1	deltex homolog 1 (Drosophila)	5381	0.1901765614748001	0.03101177	No	
+row_8	DTX2	DTX2	deltex homolog 2 (Drosophila)	5627	0.16665665805339813	0.028083146	No	
+row_9	FBXW11	FBXW11	F-box and WD-40 domain protein 11	5837	0.14247208833694458	0.025608702	No	
+row_10	FZD5	FZD5	frizzled homolog 5 (Drosophila)	6663	0.054257456213235855	-0.02405622	No	
+row_11	NOTCH3	NOTCH3	Notch homolog 3 (Drosophila)	6703	0.05017682909965515	-0.022665638	No	
+row_12	PRKCA	PRKCA	protein kinase C, alpha	6832	0.03818964585661888	-0.028033635	No	
+row_13	NOTCH1	NOTCH1	Notch homolog 1, translocation-associated (Drosophila)	7387	-0.01145921554416418	-0.0633454	No	
+row_14	HES1	HES1	hairy and enhancer of split 1, (Drosophila)	7762	-0.04825752228498459	-0.084002376	No	
+row_15	MAML2	MAML2	mastermind-like 2 (Drosophila)	8198	-0.08832605183124542	-0.105500445	No	
+row_16	JAG1	JAG1	jagged 1 (Alagille syndrome)	8267	-0.09429530054330826	-0.102541335	No	
+row_17	ARRB1	ARRB1	arrestin, beta 1	8811	-0.15042608976364136	-0.12622274	No	
+row_18	PSEN2	PSEN2	presenilin 2 (Alzheimer disease 4)	9134	-0.17850977182388306	-0.1332537	No	
+row_19	NOTCH2	NOTCH2	Notch homolog 2 (Drosophila)	9252	-0.19131705164909363	-0.12587948	No	
+row_20	PPARD	PPARD	peroxisome proliferative activated receptor, delta	9991	-0.2699600160121918	-0.15292129	No	
+row_21	LFNG	LFNG	lunatic fringe homolog (Drosophila)	10326	-0.30585339665412903	-0.15073788	No	
+row_22	RBX1	RBX1	ring-box 1	10574	-0.3336411714553833	-0.14068599	No	
+row_23	DLL1	DLL1	delta-like 1 (Drosophila)	11463	-0.40283748507499695	-0.16709913	No	
+row_24	HEYL	HEYL	hairy/enhancer-of-split related with YRPW motif-like	12688	-0.5543229579925537	-0.20358022	Yes	
+row_25	KAT2A	null	null	12920	-0.5869922637939453	-0.17258997	Yes	
+row_26	SAP30	SAP30	Sin3A-associated protein, 30kDa	13392	-0.660317599773407	-0.15152968	Yes	
+row_27	DTX4	DTX4	deltex 4 homolog (Drosophila)	14073	-0.8040798902511597	-0.13284254	Yes	
+row_28	WNT5A	WNT5A	wingless-type MMTV integration site family, member 5A	14981	-1.2439061403274536	-0.09445883	Yes	
+row_29	CCND1	CCND1	cyclin D1	15167	-1.491060495376587	0.010523492	Yes	

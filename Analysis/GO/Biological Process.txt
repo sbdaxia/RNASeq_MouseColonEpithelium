@@ -1,0 +1,61 @@
+
+
+
+
+
+Analysis Type:	PANTHER Overrepresentation Test (Released 20181113)
+Annotation Version and Release Date:	GO Ontology database  Released 2018-11-15
+Analyzed List:	upload_1 (Mus musculus)
+Reference List:	Detected_genes.csv (Mus musculus)
+Test Type:	FISHER
+Correction:	BONFERRONI
+Bonferroni count:	7912
+GO biological process complete	Detected_genes.csv - REFLIST (15296)	upload_1 (2025)	upload_1 (expected)	upload_1 (over/under)	upload_1 (fold Enrichment)	upload_1 (P-value)
+cell junction assembly (GO:0034329)	105	36	13.90	+	2.59	3.51E-02
+cell junction organization (GO:0034330)	143	46	18.93	+	2.43	8.03E-03
+actin cytoskeleton organization (GO:0030036)	400	96	52.96	+	1.81	4.36E-03
+actin filament-based process (GO:0030029)	449	106	59.44	+	1.78	2.12E-03
+negative regulation of intracellular signal transduction (GO:1902532)	443	101	58.65	+	1.72	1.45E-02
+regulation of cell motility (GO:2000145)	768	170	101.67	+	1.67	2.27E-05
+regulation of locomotion (GO:0040012)	832	184	110.15	+	1.67	5.15E-06
+regulation of cell migration (GO:0030334)	729	161	96.51	+	1.67	8.70E-05
+regulation of cellular component movement (GO:0051270)	843	184	111.60	+	1.65	1.21E-05
+regulation of protein kinase activity (GO:0045859)	551	120	72.95	+	1.65	1.22E-02
+organophosphate metabolic process (GO:0019637)	689	148	91.22	+	1.62	1.47E-03
+phosphate-containing compound metabolic process (GO:0006796)	1445	295	191.30	+	1.54	5.00E-08
+regulation of transferase activity (GO:0051338)	695	141	92.01	+	1.53	4.41E-02
+phosphorus metabolic process (GO:0006793)	1463	296	193.68	+	1.53	1.39E-07
+positive regulation of catalytic activity (GO:0043085)	880	178	116.50	+	1.53	2.60E-03
+regulation of hydrolase activity (GO:0051336)	779	156	103.13	+	1.51	2.37E-02
+regulation of catalytic activity (GO:0050790)	1473	292	195.01	+	1.50	1.26E-06
+negative regulation of signal transduction (GO:0009968)	948	185	125.50	+	1.47	1.26E-02
+positive regulation of molecular function (GO:0044093)	1183	229	156.61	+	1.46	9.72E-04
+negative regulation of cell communication (GO:0010648)	1043	201	138.08	+	1.46	8.82E-03
+negative regulation of signaling (GO:0023057)	1046	201	138.48	+	1.45	1.14E-02
+regulation of phosphate metabolic process (GO:0019220)	1350	256	178.72	+	1.43	6.80E-04
+regulation of phosphorus metabolic process (GO:0051174)	1351	256	178.86	+	1.43	8.44E-04
+small molecule metabolic process (GO:0044281)	1283	243	169.85	+	1.43	1.70E-03
+regulation of protein phosphorylation (GO:0001932)	1121	211	148.41	+	1.42	1.90E-02
+regulation of intracellular signal transduction (GO:1902531)	1344	252	177.93	+	1.42	2.35E-03
+regulation of molecular function (GO:0065009)	2005	374	265.44	+	1.41	1.82E-06
+regulation of phosphorylation (GO:0042325)	1221	227	161.65	+	1.40	1.59E-02
+negative regulation of response to stimulus (GO:0048585)	1265	231	167.47	+	1.38	4.12E-02
+regulation of protein modification process (GO:0031399)	1417	254	187.59	+	1.35	4.55E-02
+regulation of cellular component organization (GO:0051128)	2105	367	278.68	+	1.32	2.50E-03
+regulation of signal transduction (GO:0009966)	2200	379	291.25	+	1.30	4.75E-03
+regulation of localization (GO:0032879)	2235	385	295.89	+	1.30	3.37E-03
+regulation of cellular protein metabolic process (GO:0032268)	1979	338	261.99	+	1.29	4.83E-02
+regulation of signaling (GO:0023051)	2551	435	337.72	+	1.29	1.30E-03
+regulation of cell communication (GO:0010646)	2538	432	336.00	+	1.29	1.72E-03
+regulation of biological quality (GO:0065008)	3095	516	409.74	+	1.26	7.58E-04
+negative regulation of cellular process (GO:0048523)	3630	590	480.57	+	1.23	1.28E-03
+negative regulation of biological process (GO:0048519)	4035	644	534.18	+	1.21	2.82E-03
+organonitrogen compound metabolic process (GO:1901564)	3652	581	483.48	+	1.20	2.57E-02
+localization (GO:0051179)	3832	607	507.31	+	1.20	2.16E-02
+positive regulation of cellular process (GO:0048522)	4246	667	562.12	+	1.19	1.24E-02
+positive regulation of biological process (GO:0048518)	4768	743	631.22	+	1.18	5.75E-03
+regulation of cellular process (GO:0050794)	7469	1109	988.80	+	1.12	4.16E-03
+biological regulation (GO:0065007)	8462	1244	1120.26	+	1.11	1.41E-03
+cellular process (GO:0009987)	10283	1497	1361.34	+	1.10	6.40E-06
+Unclassified (UNCLASSIFIED)	862	71	114.12	-	.62	0.00E00
+ncRNA processing (GO:0034470)	290	12	38.39	-	.31	2.48E-02

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CIBERSORT</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="">
+     <meta name="author" content="">
+     <!-- Le styles -->
+     <link href="https://cibersort.stanford.edu/css/bootstrap.css" rel="stylesheet">
+     <link href="https://cibersort.stanford.edu/css/demo_table_jui.css" rel="stylesheet">
+     <link href="https://cibersort.stanford.edu/css/bootstrap-select.css" rel="stylesheet">
+     <style type="text/css">
+       body {
+         padding-top: 60px;
+         padding-bottom: 40px;
+       } 
+       .hero-unit {
+         padding-top: 30px; /* default is 60px; */
+       }
+       .accordion-heading .accordion-toggle {
+          padding: 0px 15px;
+       }
+       .lowpad {
+          padding: 0px 15px;
+       }
+     </style>
+    <link href="https://cibersort.stanford.edu/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="https://cibersort.stanford.edu/css/rotate.css" rel="stylesheet">
+   <style>
+.table-header-rotated th.rotate-45{
+  height: 180px; /* original 80 */
+  width: 75px; /* original 40,70; alter this value for min col width */
+  min-width: 75px; /* original 40,70; alter this value for min col width  */
+  max-width: 75px; /* original 40,70; alter this value for min col width  */
+  font-size: 13px; /* original 12px */
+  line-height: 1.0; /* original 0.8 */
+ }
+   .table-header-rotated th.rotate-45 > div{
+ left: 90px; /* original 40, then 90 */
+ }
+.table-header-rotated th.rotate-45 span {
+ left: -15px; /* original -25px */
+  text-align: bottom; /* original left */
+ }
+   </style>
+   <style>
+     table tr { height: 30px }
+.progress {
+    height: 30px;
+  background-image: none;
+  -webkit-print-color-adjust: exact;
+  box-shadow: inset 0 0;
+  -webkit-box-shadow: inset 0 0;
+}
+.bar {
+    line-height: 30px;
+    background-image: none;
+    -webkit-print-color-adjust: exact;
+    box-shadow: inset 0 0;
+    -webkit-box-shadow: inset 0 0;}
+   </style>
+<style type="text/css">
+td {
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+   <style>
+     .modal-body { max-height: 300px }
+   </style>
+   <style>
+/* error container */
+   errors {
+     background-color:#163356;
+     color:#fff;
+     width:400px;
+     padding:20px;
+     margin:5px auto;
+     display:none;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+     }
+ 
+/* title */
+errors h2 {
+  margin:-5px 0;
+  color:yellow;
+}
+   </style>
+</head><table id="table_id" class="table table-condensed table-header-rotated display"><thead><tr><th>Input Sample</th><th class="rotate-45" nowrap><div><span>B cells naive</span></div></th>	<th class="rotate-45" nowrap><div><span>B cells memory</span></div></th>	<th class="rotate-45" nowrap><div><span>Plasma cells</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells CD8</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells CD4 naive</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells CD4 memory resting</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells CD4 memory activated</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells follicular helper</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells regulatory (Tregs)</span></div></th>	<th class="rotate-45" nowrap><div><span>T cells gamma delta</span></div></th>	<th class="rotate-45" nowrap><div><span>NK cells resting</span></div></th>	<th class="rotate-45" nowrap><div><span>NK cells activated</span></div></th>	<th class="rotate-45" nowrap><div><span>Monocytes</span></div></th>	<th class="rotate-45" nowrap><div><span>Macrophages M0</span></div></th>	<th class="rotate-45" nowrap><div><span>Macrophages M1</span></div></th>	<th class="rotate-45" nowrap><div><span>Macrophages M2</span></div></th>	<th class="rotate-45" nowrap><div><span>Dendritic cells resting</span></div></th>	<th class="rotate-45" nowrap><div><span>Dendritic cells activated</span></div></th>	<th class="rotate-45" nowrap><div><span>Mast cells resting</span></div></th>	<th class="rotate-45" nowrap><div><span>Mast cells activated</span></div></th>	<th class="rotate-45" nowrap><div><span>Eosinophils</span></div></th>	<th class="rotate-45" nowrap><div><span>Neutrophils</span></div></th>	<th class="rotate-45" nowrap><div><span>P-value</span></div></th>	<th class="rotate-45" nowrap><div><span>Pearson Correlation</span></div></th>	<th class="rotate-45" nowrap><div><span>RMSE</span></div></th></tr></thead><tbody><tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">Fabp_1</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(186, 44, 62)">0.26</td>	<td style="border:1.0pt solid windowtext;background:rgb(239, 208, 212)">0.097</td>	<td style="border:1.0pt solid windowtext;background:rgb(244, 224, 226)">0.081</td>	<td style="border:1.0pt solid windowtext;background:rgb(91, 131, 177)">0.016</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(224, 231, 240)">0.044</td>	<td style="border:1.0pt solid windowtext;background:rgb(224, 231, 240)">0.044</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(16, 74, 141)">0.001</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(253, 249, 250)">0.055</td>	<td style="border:1.0pt solid windowtext;background:rgb(240, 209, 213)">0.096</td>	<td style="border:1.0pt solid windowtext;background:rgb(244, 221, 224)">0.083</td>	<td style="border:1.0pt solid windowtext;background:rgb(254, 252, 252)">0.053</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(232, 238, 244)">0.045</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(251, 244, 245)">0.061</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(250, 239, 240)">0.065</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.500</td>	<td style="border:1.0pt solid windowtext;">0.031</td>	<td style="border:1.0pt solid windowtext;">1.082</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">Fabp_2</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(174, 5, 26)">0.338</td>	<td style="border:1.0pt solid windowtext;background:rgb(213, 127, 137)">0.178</td>	<td style="border:1.0pt solid windowtext;background:rgb(154, 178, 207)">0.029</td>	<td style="border:1.0pt solid windowtext;background:rgb(185, 202, 222)">0.036</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(228, 171, 178)">0.133</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(28, 83, 147)">0.003</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(245, 224, 227)">0.08</td>	<td style="border:1.0pt solid windowtext;background:rgb(218, 227, 237)">0.042</td>	<td style="border:1.0pt solid windowtext;background:rgb(151, 176, 205)">0.029</td>	<td style="border:1.0pt solid windowtext;background:rgb(221, 229, 238)">0.043</td>	<td style="border:1.0pt solid windowtext;background:rgb(153, 178, 206)">0.029</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(252, 247, 248)">0.058</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(24, 80, 145)">0.002</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.020</td>	<td style="border:1.0pt solid windowtext;">0.396</td>	<td style="border:1.0pt solid windowtext;">0.931</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">Fabp_3</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(174, 5, 26)">0.375</td>	<td style="border:1.0pt solid windowtext;background:rgb(190, 54, 71)">0.25</td>	<td style="border:1.0pt solid windowtext;background:rgb(240, 244, 248)">0.047</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(209, 115, 127)">0.189</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(177, 196, 218)">0.034</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(147, 173, 203)">0.028</td>	<td style="border:1.0pt solid windowtext;background:rgb(106, 142, 184)">0.019</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(40, 93, 153)">0.006</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(153, 178, 206)">0.029</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(123, 155, 192)">0.023</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.040</td>	<td style="border:1.0pt solid windowtext;">0.198</td>	<td style="border:1.0pt solid windowtext;">1.072</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">Fabp_4</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(174, 5, 26)">0.392</td>	<td style="border:1.0pt solid windowtext;background:rgb(208, 109, 122)">0.195</td>	<td style="border:1.0pt solid windowtext;background:rgb(193, 208, 225)">0.037</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(250, 242, 243)">0.063</td>	<td style="border:1.0pt solid windowtext;background:rgb(245, 224, 226)">0.081</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(140, 168, 200)">0.026</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(235, 196, 200)">0.109</td>	<td style="border:1.0pt solid windowtext;background:rgb(58, 106, 161)">0.009</td>	<td style="border:1.0pt solid windowtext;background:rgb(245, 225, 228)">0.079</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(50, 100, 157)">0.008</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.040</td>	<td style="border:1.0pt solid windowtext;">0.217</td>	<td style="border:1.0pt solid windowtext;">1.051</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">KrasG12D_1</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(174, 5, 26)">0.383</td>	<td style="border:1.0pt solid windowtext;background:rgb(212, 125, 135)">0.18</td>	<td style="border:1.0pt solid windowtext;background:rgb(32, 86, 149)">0.004</td>	<td style="border:1.0pt solid windowtext;background:rgb(107, 143, 185)">0.02</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(112, 147, 187)">0.021</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(86, 127, 174)">0.015</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(254, 253, 253)">0.052</td>	<td style="border:1.0pt solid windowtext;background:rgb(239, 207, 211)">0.098</td>	<td style="border:1.0pt solid windowtext;background:rgb(254, 252, 252)">0.053</td>	<td style="border:1.0pt solid windowtext;background:rgb(249, 237, 238)">0.068</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(112, 147, 187)">0.021</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(247, 230, 232)">0.075</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(69, 114, 166)">0.012</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.140</td>	<td style="border:1.0pt solid windowtext;">0.120</td>	<td style="border:1.0pt solid windowtext;">1.093</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">KrasG12D_2</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(187, 47, 65)">0.257</td>	<td style="border:1.0pt solid windowtext;background:rgb(240, 211, 214)">0.094</td>	<td style="border:1.0pt solid windowtext;background:rgb(227, 168, 176)">0.136</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(226, 165, 173)">0.139</td>	<td style="border:1.0pt solid windowtext;background:rgb(63, 110, 164)">0.01</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(62, 109, 163)">0.01</td>	<td style="border:1.0pt solid windowtext;background:rgb(236, 240, 246)">0.046</td>	<td style="border:1.0pt solid windowtext;background:rgb(244, 246, 249)">0.048</td>	<td style="border:1.0pt solid windowtext;background:rgb(132, 162, 196)">0.025</td>	<td style="border:1.0pt solid windowtext;background:rgb(247, 232, 234)">0.072</td>	<td style="border:1.0pt solid windowtext;background:rgb(157, 181, 208)">0.03</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(242, 216, 219)">0.089</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(224, 232, 240)">0.044</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.200</td>	<td style="border:1.0pt solid windowtext;">0.091</td>	<td style="border:1.0pt solid windowtext;">1.062</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">KrasG12D_3</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(174, 5, 26)">0.401</td>	<td style="border:1.0pt solid windowtext;background:rgb(206, 103, 116)">0.201</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(249, 237, 238)">0.068</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(252, 246, 247)">0.059</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(242, 214, 218)">0.09</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(86, 127, 174)">0.015</td>	<td style="border:1.0pt solid windowtext;background:rgb(146, 173, 203)">0.028</td>	<td style="border:1.0pt solid windowtext;background:rgb(252, 248, 249)">0.056</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(67, 113, 165)">0.011</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(249, 237, 239)">0.067</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(35, 88, 150)">0.005</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.650</td>	<td style="border:1.0pt solid windowtext;">0.007</td>	<td style="border:1.0pt solid windowtext;">1.170</td></tr>
+<tr><td style="text-align:left; font-size:0.8em; border:1.0pt solid windowtext;">KrasG12D_4</td><td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(174, 5, 26)">0.352</td>	<td style="border:1.0pt solid windowtext;background:rgb(216, 136, 145)">0.169</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(251, 245, 246)">0.059</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(237, 241, 246)">0.046</td>	<td style="border:1.0pt solid windowtext;background:rgb(209, 220, 233)">0.041</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(227, 169, 177)">0.135</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(248, 236, 237)">0.069</td>	<td style="border:1.0pt solid windowtext;background:rgb(154, 179, 207)">0.029</td>	<td style="border:1.0pt solid windowtext;background:rgb(43, 95, 154)">0.006</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(89, 129, 176)">0.016</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(68, 114, 166)">0.011</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td>	<td style="border:1.0pt solid windowtext;background:rgb(249, 239, 240)">0.066</td>	<td style="border:1.0pt solid windowtext;background:rgb(13, 72, 140)">0</td><td style="border:1.0pt solid windowtext;">0.810</td>	<td style="border:1.0pt solid windowtext;">-0.018</td>	<td style="border:1.0pt solid windowtext;">1.153</td></tr>
+</tbody></table>      <footer>
+<div class="row-fluid">
+<div class="span4 pull-left">      
+<p>&copy; Stanford University <?php echo date("Y"); ?></p>
+</div>
+	<div class="span4 text-center"><a data-toggle="modal" href="#myModalprivacy">Privacy Statement</a>
+
+<?php
+	    include_once('inc/inc.modal.privacy.php');
+?>
+
+</div>
+
+<div class="span4 text-right">
+	 <a data-toggle="modal" href="#myModalagree">Non-Commercial Terms of Use</a>
+
+<?php
+	    include_once('inc/inc.modal.license.php');
+?>
+</div>
+</div>
+      </footer>
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cibersort.stanford.edu/js/jquery-1.8.3.min.js" type="text/javascript"></script>
+    <script src="https://cibersort.stanford.edu/js/bootstrap.js"></script>
+    <script type="text/javascript" charset="utf-8" src="https://cibersort.stanford.edu/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf-8" src="https://cibersort.stanford.edu/js/FixedColumns.js"></script>
+<script type="text/javascript" charset="utf-8" src="https://cibersort.stanford.edu/js/bootstrap-select.js"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $('#modalLoginFailed').modal('show');
+    });
+</script>
+<script>
+$('.accordion').on('show hide', function (n) {
+    $(n.target).siblings('.accordion-heading').find('.accordion-toggle i').toggleClass('icon-chevron-up icon-chevron-down');
+});
+</script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script type="text/javascript">
+      $.fn.dataTableExt.afnFiltering.push(
+	function( oSettings, aData, iDataIndex ) {
+	  var iMin = document.getElementById('min').value * 1;
+	  var iMax = document.getElementById('max').value * 1;
+		var iVersion = aData[<?php echo $pvalcol ?>] == "-" ? 0 : aData[<?php echo $pvalcol ?>]*1;
+		if ( iMin == "" && iMax == "" )
+		{
+			return true;
+		}
+		else if ( iMin == "" && iVersion <= iMax )
+		{
+			return true;
+		}
+		else if ( iMin < iVersion && "" == iMax )
+		{
+			return true;
+		}
+		else if ( iMin < iVersion && iVersion < iMax )
+		{
+			return true;
+		}
+		return false;
+	}
+	);
+  
+    $(document).ready(function() {
+	$('.selectpicker').selectpicker();
+	var oTable = $('#table_id').dataTable( {
+	    "sScrollY": "450px",
+	    "sScrollX": "100%",
+	    "sScrollXInner": "100%",
+	    "bScrollCollapse": true,
+	      "bPaginate": false
+ });
+		      new FixedColumns( oTable, {
+			  "sHeightMatch": "none",
+			    "sLeftWidth": "fixed",
+			    "iLeftWidth": 250
+});
+    /* Add event listeners to the two range filtering inputs */
+    $('#min').keyup( function() { oTable.fnDraw(); } );
+    $('#max').keyup( function() { oTable.fnDraw(); } );
+    $('#pfilter').on('click', function() { oTable.fnDraw(); } );
+} );
+
+    </script>
+  </body>
+</html>

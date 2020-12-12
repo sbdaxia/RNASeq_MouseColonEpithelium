@@ -1,0 +1,301 @@
+---
+title: "Kras colon epithelium RNA-Seq transcript level analysis"
+author: "Bing Shui"
+date: "02/28/2018"
+output: 
+  html_document:
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Alignmnent and counting of the `fastq` files
+
+This step is performed on the O2 cluster. The `fastq` file quality was checked using FastQC and MultiQC. They are aligned to Ensembl mm10 genome and counted using Salmon pseudoaligner. Output `sf` files were transfered from O2 to local machine for further processing in R.  
+
+## Library loading and set up
+```{r}
+suppressMessages(
+  c(library(DESeq2),
+    library(tximport),
+    library(gridExtra),
+    library(ensembldb),
+    library(EnsDb.Mmusculus.v79),
+    library(grid),
+    library(ggplot2),
+    library(lattice),
+    library(reshape),
+    library(mixOmics),
+    library(gplots),
+    library(RColorBrewer),
+    library(readr),
+    library(dplyr),
+    library(VennDiagram))
+)
+```
+
+## Compile gene count files in DESeq2
+
+Set working directory to the folder that contains only gene count `txt` files
+
+```{r}
+# Generate a tx2gene object for matrix generation
+edb <- EnsDb.Mmusculus.v79 
+transcriptsID <- as.data.frame(transcripts(edb))
+tx2gene <- as.data.frame(cbind(transcriptsID$tx_id, transcriptsID$tx_id))
+
+# Generate DESeqData using the counting result generated using Salmon
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Gene Counts")
+inDir = getwd()
+countFiles = list.files(inDir, pattern=".sf$", full.names = TRUE)
+basename(countFiles)
+names(countFiles) <- c('Fabp_1','Fabp_2','Fabp_3','Fabp_4','KrasG12D_1','KrasG12D_2','KrasG12D_3','KrasG12D_4')
+
+txi.salmon <- tximport(countFiles, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = TRUE)
+
+DESeqsampletable <- data.frame(condition = c('control','control','control','control','experimental','experimental','experimental','experimental'))
+DESeqsampletable$gender <- factor(c("F", "M", "M", "M", "F", "F", "F", "M"))
+rownames(DESeqsampletable) <- colnames(txi.salmon$counts)
+
+ddsHTSeq<- DESeqDataSetFromTximport(txi.salmon, DESeqsampletable, ~  gender + condition)
+
+ddsHTSeq_norm <- estimateSizeFactors(ddsHTSeq)
+
+ddsHTSeq_norm <- DESeq(ddsHTSeq_norm)
+ddsHTSeq_analysis <- results(ddsHTSeq_norm, contrast = c("condition", "experimental", "control"))
+ddsHTSeq_analysis <- lfcShrink(ddsHTSeq_norm, contrast = c("condition", "experimental", "control"), res = ddsHTSeq_analysis)
+```
+MA plot was generated to inspect the correct shrinkage of LFC.
+```{r}
+plotMA(ddsHTSeq_analysis)
+```
+
+## Quality Inspection of the Gene Count Data
+### Generate raw count table that contains the simple counts of each gene
+Data is transformed and pseudocount is calculated.
+```{r}
+rawCountTable <- as.data.frame(DESeq2::counts(ddsHTSeq_norm, normalized = TRUE))
+pseudoCount = log2(rawCountTable + 1)
+grid.arrange(
+  ggplot(pseudoCount, aes(x= Fabp_1)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_1"), 
+  ggplot(pseudoCount, aes(x= Fabp_2)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_2"),
+  ggplot(pseudoCount, aes(x= Fabp_3)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_3"),
+  ggplot(pseudoCount, aes(x= Fabp_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_4"), nrow = 2)
+  
+grid.arrange(
+  ggplot(pseudoCount, aes(x= KrasG12D_1)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_1"),
+  ggplot(pseudoCount, aes(x= KrasG12D_2)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_2"),
+  ggplot(pseudoCount, aes(x= KrasG12D_3)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_3"),
+  ggplot(pseudoCount, aes(x= KrasG12D_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Transcripts") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_4"), nrow = 2)
+```
+
+### Between-sample distribution
+Check on the gene count distribution across all genes.
+```{r}
+#Boxplots
+suppressMessages(df <- melt(pseudoCount, variable_name = "Samples"))
+df <- data.frame(df, Condition = substr(df$Samples,1,4))
+
+ggplot(df, aes(x=Samples, y=value, fill = Condition)) + geom_boxplot() + xlab("") + 
+  ylab(expression(log[2](count+1))) + scale_fill_manual(values = c("#619CFF", "#F564E3")) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+#Histograms and density plots
+ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + ylim(c(0, 0.25)) + 
+  geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
+  theme(legend.position = "top") + xlab(expression(log[2](count+1)))
+```
+### Generate MA plots 
+MA plots are used to check for imbalance in sequencing depth between samples of the same condition. I did not generate MA plot for all library pairs. But the example pairs I selected show that there are imbalance in sequencing depth, but the imbalance is quite random and this is common in RNA-Seq datasets.
+```{r}
+## WT1 vs WT2
+x = pseudoCount[, 1]
+y = pseudoCount[, 2]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "Fabp_1 vs Fabp_2"))
+
+## WT1 vs WT3
+x = pseudoCount[, 1]
+y = pseudoCount[, 3]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "Fabp_1 vs Fabp_3"))
+
+## G12D_1 vs G12D_2
+x = pseudoCount[, 5]
+y = pseudoCount[, 6]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "KrasG12D_1 vs KrasG12D_2"))
+
+## G12D_1 vs G12D_3
+x = pseudoCount[, 5]
+y = pseudoCount[, 7]
+## M-values
+M = x - y
+## A-values
+A = (x + y)/2
+df = data.frame(A, M)
+
+suppressWarnings(
+ggplot(df, aes(x = A, y = M)) + geom_point(size = 1.5, alpha = 1/5) +
+  geom_hline(color = "blue3", yintercept = 0) + stat_smooth(se = FALSE, method = "loess", color = "red3") + labs(title = "KrasG12D_1 vs KrasG12D_3"))
+```
+
+### Clustering of the sample-to-sample distances
+This is the sanity check step to confirm that under a un-supervised clustering, WT and G12D samples will cluster together. For some reason, the code is giving error when try to plot this heatmap in RStudio, so I created a pdf file that contains the heatmap in the Analysis folder named `Hierchical Clustering.pdf`
+```{r}
+ddsHTSeq_transform <- varianceStabilizingTransformation(ddsHTSeq_norm)
+rawCountTable_transform <- as.data.frame(assay(ddsHTSeq_transform))
+pseudoCount_transform = log2(rawCountTable_transform + 1)
+mat.dist = pseudoCount_transform
+mat.dist = as.matrix(dist(t(mat.dist)))
+mat.dist = mat.dist/max(mat.dist)
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis")
+png('Hierchical_Clustering_transcript_level.png')
+cim(mat.dist, symkey = FALSE, margins = c(6, 6))
+suppressMessages(dev.off())
+```
+
+Final output is following:
+![Hierchical Clustering](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/Hierchical_Clustering_transcript_level.png)
+
+### Principal component plot of the samples
+I performed PCA analysis on all datasets to confirm that samples from the same condition group together. This step has to be performed using `varianceStabelizingTransformed` dataset, so that the high variance in genes with low counts will not skew the data.
+
+The top 500 most variable genes are selected for PCA analysis.
+
+```{r}
+plotPCA(ddsHTSeq_transform, intgroup = "condition", ntop = 500)
+```
+
+# Raw data filtering and Generate the raw count file with all detected genes
+This step removes all genes with 0 counts across all samples, output a `csv` file and also generate a density plot using filtered dataset.
+```{r}
+keep <- rowSums(rawCountTable) > 0
+filterCount <- pseudoCount[keep,]
+df <- melt(filterCount, variable_name = "Samples")
+df <- data.frame(df, Condition = substr(df$Samples,1,4))
+detected_raw_count_norm <- rawCountTable[keep,]
+write.csv(detected_raw_count_norm, "normalized_raw_transcript_counts.csv")
+
+ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + 
+  geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
+  theme(legend.position = "top") + xlab("pseudocounts")
+```  
+  
+### Generate file with differential analysis result
+This step generates the analysis file that contains results from differential analysis.
+```{r}
+write.csv(as.data.frame(ddsHTSeq_analysis[keep,]), "Differential Analysis_transcript_level.csv")
+```
+
+### Draw heatmap for transcripts that are significantly dysregulated in KRasG12D samples
+Genes that were not detected were removed from the list. Genes with `padj` < 0.05 were considered significantly dysregulated. Their normalized counts were z-scored and used for plotting the heatmap.
+
+```{r}
+suppressMessages(library(mosaic))
+
+rawCountTable_transform_detected <- rawCountTable_transform[keep,]
+
+dif_analysis <- as.data.frame(ddsHTSeq_analysis)[keep,]
+sig_dif <- subset(dif_analysis, dif_analysis$padj < 0.05)
+sig_index <- c()
+for (i in 1:dim(sig_dif)[1]) {
+  sig_index <- c(sig_index ,grep(rownames(sig_dif)[i], rownames(rawCountTable_transform_detected)))
+}
+sig_count <- rawCountTable_transform_detected[sig_index,]
+sig_dif <- cbind(sig_dif, sig_count)
+for (i in 1:dim(sig_dif)[1]) {
+  sig_dif[i,7:14] <- zscore(as.numeric(sig_dif[i,7:14]))
+}
+
+my_palette <- colorRampPalette(c("red", "white", "blue"))(256)
+heatmap_matrix <- as.matrix(sig_dif[,7:14])
+
+png('G12D vs WT colon epithelium transcript level RNASeq.png',
+    width = 300,
+    height = 600,
+    res = 100,
+    pointsize = 8)
+heatmap.2(heatmap_matrix,
+          main = "Colon epithelium RNASeq",
+          density.info = "none",
+          key = TRUE,
+          lhei = c(1,7),
+          col=my_palette,
+          cexCol = 1,
+          margins = c(8,2),
+          trace = "none",
+          dendrogram = "both",
+          labRow = FALSE,
+          keysize = 2,
+          ylab = "Genes",
+          Colv = "NA")
+dev.off()
+```
+
+Final output is ![Heatmap for differential genes](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/G12D vs WT colon epithelium transcript level RNASeq.png)
+
+### Scatter plot, MA plot and Volcano plot for data visualization
+
+```{r}
+# Scatter plot
+detected_pseudocount <- pseudoCount[keep,]
+dif_analysis$KrasG12D_mean <- rowMeans(detected_pseudocount[,5:8])
+dif_analysis$KrasWT_mean <- rowMeans(detected_pseudocount[,1:4])
+ggplot(dif_analysis, aes(x = KrasWT_mean, y = KrasG12D_mean)) +
+  xlab("WT_Average(log2)") + ylab("G12D_Average(log2)") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "grey") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+  labs(title = "WT vs G12D Scatter Plot")
+
+# MA plot
+ggplot(dif_analysis, aes(x = log(baseMean,2), y = log2FoldChange,)) +
+  xlab("Average Expression") + ylab("LFC") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "grey") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+labs(title = "WT vs G12D MA Plot")
+
+# Volcano Plot
+ggplot(dif_analysis, aes(x = log2FoldChange, y = -log(padj,10))) +
+  xlab("LFC") + ylab("-log10(P value)") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "black") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+labs(title = "WT vs G12D Volcano Plot") +
+  xlim(-3,3)
+
+
+```
+

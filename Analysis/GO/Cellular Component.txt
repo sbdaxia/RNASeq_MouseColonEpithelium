@@ -1,0 +1,72 @@
+
+
+
+
+
+Analysis Type:	PANTHER Overrepresentation Test (Released 20181113)
+Annotation Version and Release Date:	GO Ontology database  Released 2018-11-15
+Analyzed List:	upload_1 (Mus musculus)
+Reference List:	Detected_genes.csv (Mus musculus)
+Test Type:	FISHER
+Correction:	BONFERRONI
+Bonferroni count:	1320
+GO cellular component complete	Detected_genes.csv - REFLIST (15296)	upload_1 (2025)	upload_1 (expected)	upload_1 (over/under)	upload_1 (fold Enrichment)	upload_1 (P-value)
+respiratory chain complex I (GO:0045271)	45	23	5.96	+	3.86	1.78E-03
+NADH dehydrogenase complex (GO:0030964)	45	23	5.96	+	3.86	1.78E-03
+mitochondrial respiratory chain complex I (GO:0005747)	45	23	5.96	+	3.86	1.78E-03
+mitochondrial respirasome (GO:0005746)	73	32	9.66	+	3.31	2.60E-04
+respiratory chain complex (GO:0098803)	74	31	9.80	+	3.16	8.74E-04
+respirasome (GO:0070469)	82	33	10.86	+	3.04	7.95E-04
+oxidoreductase complex (GO:1990204)	98	39	12.97	+	3.01	1.48E-04
+inner mitochondrial membrane protein complex (GO:0098800)	123	48	16.28	+	2.95	6.05E-06
+brush border (GO:0005903)	112	38	14.83	+	2.56	5.65E-03
+ruffle (GO:0001726)	126	42	16.68	+	2.52	1.84E-03
+focal adhesion (GO:0005925)	127	40	16.81	+	2.38	1.10E-02
+apical junction complex (GO:0043296)	117	36	15.49	+	2.32	4.77E-02
+cell-substrate junction (GO:0030055)	137	42	18.14	+	2.32	1.29E-02
+cell-substrate adherens junction (GO:0005924)	131	40	17.34	+	2.31	2.50E-02
+mitochondrial membrane part (GO:0044455)	203	61	26.87	+	2.27	2.39E-04
+adherens junction (GO:0005912)	238	69	31.51	+	2.19	9.83E-05
+anchoring junction (GO:0070161)	249	70	32.96	+	2.12	1.90E-04
+mitochondrial protein complex (GO:0098798)	239	64	31.64	+	2.02	2.76E-03
+membrane raft (GO:0045121)	292	78	38.66	+	2.02	2.39E-04
+membrane microdomain (GO:0098857)	293	78	38.79	+	2.01	2.56E-04
+membrane region (GO:0098589)	301	78	39.85	+	1.96	7.91E-04
+mitochondrial inner membrane (GO:0005743)	390	100	51.63	+	1.94	2.47E-05
+actin cytoskeleton (GO:0015629)	396	100	52.43	+	1.91	4.63E-05
+organelle inner membrane (GO:0019866)	423	106	56.00	+	1.89	2.51E-05
+cell-cell junction (GO:0005911)	378	94	50.04	+	1.88	2.49E-04
+cell leading edge (GO:0031252)	314	77	41.57	+	1.85	6.04E-03
+mitochondrial membrane (GO:0031966)	539	123	71.36	+	1.72	1.73E-04
+mitochondrial envelope (GO:0005740)	581	129	76.92	+	1.68	3.25E-04
+plasma membrane region (GO:0098590)	930	197	123.12	+	1.60	4.10E-06
+envelope (GO:0031975)	921	191	121.93	+	1.57	3.27E-05
+organelle envelope (GO:0031967)	921	191	121.93	+	1.57	3.27E-05
+membrane protein complex (GO:0098796)	910	188	120.47	+	1.56	4.86E-05
+mitochondrial part (GO:0044429)	747	153	98.89	+	1.55	1.92E-03
+cell junction (GO:0030054)	908	184	120.21	+	1.53	2.30E-04
+whole membrane (GO:0098805)	927	182	122.72	+	1.48	1.68E-03
+organelle membrane (GO:0031090)	1514	295	200.43	+	1.47	8.99E-07
+mitochondrion (GO:0005739)	1571	295	207.98	+	1.42	2.47E-05
+vesicle (GO:0031982)	1553	280	205.60	+	1.36	1.33E-03
+cytoplasmic vesicle (GO:0031410)	1454	258	192.49	+	1.34	1.16E-02
+intracellular vesicle (GO:0097708)	1456	258	192.76	+	1.34	1.40E-02
+cytosol (GO:0005829)	2972	510	393.46	+	1.30	4.47E-06
+cell periphery (GO:0071944)	3905	640	516.97	+	1.24	1.31E-05
+plasma membrane (GO:0005886)	3796	618	502.54	+	1.23	7.30E-05
+cytoplasmic part (GO:0044444)	7018	1135	929.10	+	1.22	1.10E-14
+membrane (GO:0016020)	6527	1042	864.09	+	1.21	1.23E-10
+cytoplasm (GO:0005737)	8918	1417	1180.63	+	1.20	2.46E-21
+membrane part (GO:0044425)	4913	765	650.42	+	1.18	6.09E-04
+intracellular organelle part (GO:0044446)	6085	915	805.58	+	1.14	4.86E-03
+organelle part (GO:0044422)	6348	941	840.40	+	1.12	2.94E-02
+intracellular (GO:0005622)	11030	1620	1460.23	+	1.11	1.91E-11
+intracellular part (GO:0044424)	11030	1620	1460.23	+	1.11	1.91E-11
+membrane-bounded organelle (GO:0043227)	8990	1319	1190.16	+	1.11	5.09E-05
+intracellular membrane-bounded organelle (GO:0043231)	8472	1242	1121.59	+	1.11	5.03E-04
+intracellular organelle (GO:0043229)	9757	1430	1291.71	+	1.11	1.49E-06
+organelle (GO:0043226)	9975	1453	1320.57	+	1.10	4.90E-06
+cell part (GO:0044464)	12497	1776	1654.45	+	1.07	6.37E-09
+cell (GO:0005623)	12499	1776	1654.71	+	1.07	7.73E-09
+Unclassified (UNCLASSIFIED)	572	48	75.73	-	.63	0.00E00
+cytosolic ribosome (GO:0022626)	127	1	16.81	-	.06	6.50E-03
