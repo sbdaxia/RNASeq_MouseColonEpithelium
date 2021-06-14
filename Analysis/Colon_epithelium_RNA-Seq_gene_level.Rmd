@@ -1,10 +1,13 @@
 ---
 title: "Kras colon epithelium RNA-Seq gene level analysis"
 author: "Bing Shui"
-date: "11/29/2018"
+date: "`r Sys.Date()`"
 output: 
   html_document:
-    self-contained: true
+    toc: yes
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -17,6 +20,8 @@ This step is performed on the O2 cluster. The `fastq` file quality was checked u
 
 ## Library loading and set up
 ```{r}
+options(connectionObserver = NULL)
+
 suppressMessages(
   c(library(DESeq2),
     library(tximport),
@@ -84,6 +89,8 @@ DESeq2::plotMA(ddsHTSeq_analysis)
 ### Generate raw count table that contains the simple counts of each gene
 Data is transformed and pseudocount is calculated.
 ```{r}
+setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/")
+dir.create("PDF_figure", showWarnings = FALSE)
 rawCountTable <- as.data.frame(DESeq2::counts(ddsHTSeq_norm, normalize = TRUE))
 pseudoCount = log2(rawCountTable + 1)
 grid.arrange(
@@ -105,6 +112,30 @@ grid.arrange(
     geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_3"),
   ggplot(pseudoCount, aes(x= KrasG12D_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
     geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_4"), nrow = 2)
+
+pdf('PDF_figure/QC_histogram.pdf',
+    width = 10,
+    height = 7)
+grid.arrange(
+  ggplot(pseudoCount, aes(x= Fabp_1)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_1"), 
+  ggplot(pseudoCount, aes(x= Fabp_2)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_2"),
+  ggplot(pseudoCount, aes(x= Fabp_3)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_3"),
+  ggplot(pseudoCount, aes(x= Fabp_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "Fabp_4"), nrow = 2)
+
+grid.arrange(
+  ggplot(pseudoCount, aes(x= KrasG12D_1)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_1"),
+  ggplot(pseudoCount, aes(x= KrasG12D_2)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_2"),
+  ggplot(pseudoCount, aes(x= KrasG12D_3)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_3"),
+  ggplot(pseudoCount, aes(x= KrasG12D_4)) + xlab(expression(log[2](count + 1))) + ylab("Number of Genes") + 
+    geom_histogram(colour = "white", fill = "#525252", binwidth = 0.6) + labs(title = "KrasG12D_4"), nrow = 2)
+dev.off()
 ```
 
 ### Between-sample distribution
@@ -117,10 +148,25 @@ df <- data.frame(df, Condition = substr(df$Samples,1,4))
 ggplot(df, aes(x=Samples, y=value, fill = Condition)) + geom_boxplot() + xlab("") + 
   ylab(expression(log[2](count+1))) + scale_fill_manual(values = c("#619CFF", "#F564E3")) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+pdf('PDF_figure/QC_boxplot.pdf',
+    width = 5,
+    height = 4)
+ggplot(df, aes(x=Samples, y=value, fill = Condition)) + geom_boxplot() + xlab("") + 
+  ylab(expression(log[2](count+1))) + scale_fill_manual(values = c("#619CFF", "#F564E3")) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+dev.off()
+
 #Histograms and density plots
 ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + ylim(c(0, 0.25)) + 
   geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
   theme(legend.position = "top") + xlab(expression(log[2](count+1)))
+
+pdf('PDF_figure/QC_densityplot.pdf',
+    width = 5,
+    height = 4)
+ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + ylim(c(0, 0.25)) + 
+  geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
+  theme(legend.position = "top") + xlab(expression(log[2](count+1)))
+dev.off()
 ```
 ### Generate MA plots 
 MA plots are used to check for imbalance in sequencing depth between samples of the same condition. I did not generate MA plot for all library pairs. But the example pairs I selected show that there are imbalance in sequencing depth, but the imbalance is quite random and this is common in RNA-Seq datasets.
@@ -191,6 +237,12 @@ setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2
 png('Hierchical_Clustering.png')
 cim(mat.dist, symkey = FALSE, margins = c(6, 6))
 suppressMessages(dev.off())
+
+pdf('PDF_figure/Hierchical_Clustering.pdf',
+    width = 6,
+    height = 6)
+cim(mat.dist, symkey = FALSE, margins = c(6, 6))
+dev.off()
 ```
 
 Final output is following:
@@ -203,6 +255,12 @@ The top 500 most variable genes are selected for PCA analysis.
 
 ```{r}
 plotPCA(ddsHTSeq_transform, intgroup = "condition", ntop = 500)
+
+pdf('PDF_figure/PCA.pdf',
+    width = 6,
+    height = 4)
+plotPCA(ddsHTSeq_transform, intgroup = "condition", ntop = 500)
+dev.off()
 ```
 
 # Raw data filtering and Generate the raw count file with all detected genes
@@ -222,6 +280,14 @@ write.csv(rawCountTable_no_normalization, "raw_gene_counts.csv")
 ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + 
   geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
   theme(legend.position = "top") + xlab("pseudocounts")
+
+pdf('PDF_figure/QC_filtered_densityplot.pdf',
+    width = 6,
+    height = 4)
+ggplot(df, aes(x=value, colour = Samples, fill = Samples)) + 
+  geom_density(alpha = 0.2, size = 1.25) + facet_wrap(~ Condition) +
+  theme(legend.position = "top") + xlab("pseudocounts")
+dev.off()
 ```  
   
 ### Output `txt` file for CiberSort
@@ -265,6 +331,7 @@ detected_raw_count_norm_cs <- inner_join(detected_raw_count_norm_cs,LM22_signatu
 setwd("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/CiberSort")
 write.csv(detected_raw_count_norm_cs, "normalized_raw_gene_counts_for_Cibersort.csv")
 ```
+
 Once the result file is generated and exported as `csv` file, I input it here and perform differential analysis on them.
 ```{r}
 cs_result <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/CiberSort/CIBERSORT.Output_Job2.csv")
@@ -361,6 +428,27 @@ heatmap.2(heatmap_matrix,
           cexCol = 2,
           Colv = "NA")
 dev.off()
+
+pdf('PDF_figure/Heatmap.pdf',
+    width = 6,
+    height = 12)
+par(cex.main=1.1)
+heatmap.2(heatmap_matrix,
+          main = "Differentially expressed\nRNA in colon epithelium\npadj < 0.05",
+          density.info = "none",
+          key = TRUE,
+          lwid = c(3,7),
+          lhei = c(1,7),
+          col=my_palette,
+          margins = c(12,2),
+          symbreaks = TRUE,
+          trace = "none",
+          dendrogram = "row",
+          labRow = FALSE,
+          ylab = "Genes",
+          cexCol = 2,
+          Colv = "NA")
+dev.off()
 ```
 
 Final output is ![Heatmap for differential genes](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/G12D vs WT colon epithelium RNASeq.png)
@@ -379,6 +467,17 @@ ggplot(dif_analysis, aes(x = KrasWT_mean, y = KrasG12D_mean)) +
   geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
   labs(title = "WT vs G12D Scatter Plot")
 
+pdf('PDF_figure/Scatter_Plot.pdf',
+    width = 5,
+    height = 4)
+ggplot(dif_analysis, aes(x = KrasWT_mean, y = KrasG12D_mean)) +
+  xlab("WT_Average(log2)") + ylab("G12D_Average(log2)") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "grey") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+  labs(title = "WT vs G12D Scatter Plot")
+dev.off()
+
 # MA plot
 ggplot(dif_analysis, aes(x = log(baseMean,2), y = log2FoldChange,)) +
   xlab("Average Expression") + ylab("LFC") + 
@@ -387,6 +486,17 @@ ggplot(dif_analysis, aes(x = log(baseMean,2), y = log2FoldChange,)) +
   geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
 labs(title = "WT vs G12D MA Plot")
 
+pdf('PDF_figure/MA_Plot.pdf',
+    width = 5,
+    height = 4)
+ggplot(dif_analysis, aes(x = log(baseMean,2), y = log2FoldChange,)) +
+  xlab("Average Expression") + ylab("LFC") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "grey") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+labs(title = "WT vs G12D MA Plot")
+dev.off()
+
 # Volcano Plot
 ggplot(dif_analysis, aes(x = log2FoldChange, y = -log(padj,10))) +
   xlab("LFC") + ylab("-log10(P value)") + 
@@ -394,9 +504,19 @@ ggplot(dif_analysis, aes(x = log2FoldChange, y = -log(padj,10))) +
   geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
   geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
 labs(title = "WT vs G12D Volcano Plot") +
-  xlim(-3,3)
+  xlim(-3,3) + ylim(0,40)
 
-
+pdf('PDF_figure/Volcano_Plot.pdf',
+    width = 5,
+    height = 4)
+ggplot(dif_analysis, aes(x = log2FoldChange, y = -log(padj,10))) +
+  xlab("LFC") + ylab("-log10(P value)") + 
+  geom_point(data = dif_analysis, alpha = 0.5, size = 1, color = "black") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange > 0), alpha = 0.5, size = 1, color = "red") +
+  geom_point(data = subset(dif_analysis, padj < 0.05 & log2FoldChange < 0), alpha = 0.5, size = 1, color = "blue") +
+labs(title = "WT vs G12D Volcano Plot") +
+  xlim(-3,3) + ylim(0,40)
+dev.off()
 ```
 
 ### GO analysis for DE genes
@@ -462,6 +582,12 @@ png('GO/GO dotplot_BP.png',
     pointsize = 8)
 dotplot(ego_BP, showCategory=50)
 dev.off()
+
+pdf('PDF_figure/GO dotplot_BP.pdf',
+    width = 26,
+    height = 16)
+dotplot(ego_BP, showCategory=50)
+dev.off()
 ```
 Final output is following:
 ![BP_dotplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO dotplot_BP.png)
@@ -476,6 +602,12 @@ png('GO/GO dotplot_MF.png',
     pointsize = 8)
 dotplot(ego_MF, showCategory=50)
 dev.off()
+
+pdf('PDF_figure/GO dotplot_MF.pdf',
+    width = 16,
+    height = 16)
+dotplot(ego_MF, showCategory=50)
+dev.off()
 ```
 Final output is following:
 ![MF_dotplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO dotplot_MF.png)
@@ -488,6 +620,12 @@ png('GO/GO dotplot_CC.png',
     height = 1600,
     res = 100,
     pointsize = 8)
+dotplot(ego_CC, showCategory=50)
+dev.off()
+
+pdf('PDF_figure/GO dotplot_CC.pdf',
+    width = 16,
+    height = 16)
 dotplot(ego_CC, showCategory=50)
 dev.off()
 ```
@@ -506,6 +644,12 @@ png('GO/GO enrichment_BP.png',
     pointsize = 8)
 emapplot(ego_BP, showCategory = 50)
 dev.off()
+
+pdf('PDF_figure/GO enrichment_BP.pdf',
+    width = 16,
+    height = 16)
+emapplot(ego_BP, showCategory = 50)
+dev.off()
 ```
 Final output is following:
 ![BP_enrichplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO enrichment_BP.png)
@@ -520,6 +664,12 @@ png('GO/GO enrichment_MF.png',
     pointsize = 8)
 emapplot(ego_MF, showCategory = 50)
 dev.off()
+
+pdf('PDF_figure/GO enrichment_MF.pdf',
+    width = 16,
+    height = 16)
+emapplot(ego_MF, showCategory = 50)
+dev.off()
 ```
 Final output is following:
 ![MF_enrichplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO enrichment_MF.png)
@@ -532,6 +682,12 @@ png('GO/GO enrichment_CC.png',
     height = 1600,
     res = 100,
     pointsize = 8)
+emapplot(ego_CC, showCategory = 50)
+dev.off()
+
+pdf('PDF_figure/GO enrichment_CC.pdf',
+    width = 16,
+    height = 16)
 emapplot(ego_CC, showCategory = 50)
 dev.off()
 ```
@@ -560,6 +716,16 @@ cnetplot(ego_BP,
          foldChange=OE_foldchanges, 
          vertex.label.font=6)
 dev.off()
+
+pdf('PDF_figure/GO cnetplot_BP.pdf',
+    width = 16,
+    height = 16)
+cnetplot(ego_BP, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=6)
+dev.off()
 ```
 Final output is following:
 ![BP_cnetplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO cnetplot_BP.png)
@@ -572,6 +738,16 @@ png('GO/GO cnetplot_MF.png',
     height = 1600,
     res = 100,
     pointsize = 8)
+cnetplot(ego_MF, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=6)
+dev.off()
+
+pdf('PDF_figure/GO cnetplot_MF.pdf',
+    width = 16,
+    height = 16)
 cnetplot(ego_MF, 
          categorySize="pvalue", 
          showCategory = 5, 
@@ -596,6 +772,16 @@ cnetplot(ego_CC,
          foldChange=OE_foldchanges, 
          vertex.label.font=6)
 dev.off()
+
+pdf('PDF_figure/GO cnetplot_CC.pdf',
+    width = 16,
+    height = 16)
+cnetplot(ego_CC, 
+         categorySize="pvalue", 
+         showCategory = 5, 
+         foldChange=OE_foldchanges, 
+         vertex.label.font=6)
+dev.off()
 ```
 Final output is following:
 ![CC_cnetplot](/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/GO/GO cnetplot_CC.png)
@@ -606,7 +792,7 @@ For all proteins that were detected in the scraped colon proteomics, I extracted
 
 The proteomics file that I am using here is generated by Joao, tissue collect done by Emily and differential analysis done by Doug. The raw quantification file is `2015-03_HaigisMouseColon8plex_Prot`. The differential analysis file is 
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 Uniprot_2_Ensembl <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/RNA-Seq/Mouse colon epithelium/Analysis/Uniprot_2_Ensembl.csv")
 proteomics_quant <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/Proteomics data/scraped colon/2015-03_HaigisMouseColon8plex_Prot.csv")
 proteomics_diff <- read_csv("/Users/mizuhi/OneDrive - Harvard University/Haigis Lab/Projects/Halo-Ago2/Halo-Ago-KRas/Raw Data/Proteomics data/scraped colon/ceMS_diff.csv")
@@ -672,6 +858,16 @@ ggplot(overlap_lfc, aes(x = rna_lfc, y = protein_lfc)) +
   labs(title = "Correlation between proteomics and transcriptomics") +
   xlim(-3,3) + ylim(-3,3)
 
+pdf('PDF_figure/cor_RNA_protein.pdf',
+    width = 5,
+    height = 4)
+ggplot(overlap_lfc, aes(x = rna_lfc, y = protein_lfc)) +
+  geom_point(data = overlap_lfc, alpha = 0.5, size = 1, color = "black") +
+  xlab("RNA LFC (KRas/WT)") + ylab("Protein LFC (KRas/WT)") + 
+  labs(title = "Correlation between proteomics and transcriptomics") +
+  xlim(-3,3) + ylim(-3,3)
+dev.off()
+
 # Correlation test
 cor.test(overlap_lfc$rna_lfc, overlap_lfc$protein_lfc)
 ```
@@ -704,6 +900,21 @@ draw.pairwise.venn(length(rna_de),
                    cat.pos = c(200, 135), cat.dist = 0.05, margin = 0.05,
                    fontfamily = "sans", cat.fontfamily = "sans")
 
+
+pdf('PDF_figure/overlap_RNA_protein.pdf',
+    width = 5,
+    height = 4)
+draw.pairwise.venn(length(rna_de),
+                   length(protein_de),
+                   length(overlap_de),
+                   catergory <- c("DE_Transcriptomics",
+                                  "DE_Proteomics"),
+                   lty = "blank",
+                   ex.text = FALSE,
+                   fill = c("pink", "lightblue"),
+                   cat.pos = c(200, 135), cat.dist = 0.05, margin = 0.05,
+                   fontfamily = "sans", cat.fontfamily = "sans")
+dev.off()
 ```
 
 
