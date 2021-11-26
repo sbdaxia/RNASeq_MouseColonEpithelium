@@ -1,0 +1,125 @@
+---
+title: "KEGG and GSEA analysis"
+author: "Bing Shui"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Libraries
+```{r message=FALSE, warning=FALSE}
+library(org.Mm.eg.db)
+library(AnnotationDbi)
+library(data.table)
+library(tidyverse)
+library(rtracklayer)
+library(RColorBrewer)
+library(gplots)
+library(clusterProfiler)
+library(fgsea)
+library(grid)
+```
+
+## KEGG Analysis
+```{r}
+dif <-read_csv("Differential Analysis.csv")
+colnames(dif)[1] <- "Ensembl_ID"
+
+annotations <- AnnotationDbi::select(org.Mm.eg.db,
+                                           keys = as.character(dif$Ensembl_ID),
+                                           columns = c("ENTREZID"),
+                                           keytype = "ENSEMBL")
+
+# Determine the indices for the non-duplicated genes
+non_duplicates_idx <- which(duplicated(annotations$ENSEMBL) == FALSE)
+
+# Return only the non-duplicated genes using indices
+annotations <- annotations[non_duplicates_idx, ]
+
+
+dif <- left_join(dif, annotations, by = c("Ensembl_ID" = "ENSEMBL"))
+
+sig.genes <- dif %>% filter(padj < 0.05) %>% select(ENTREZID) %>% unlist()
+all.genes <- dif %>% select(ENTREZID) %>% unlist()
+
+dir.create("KEGG", showWarnings = FALSE)
+
+kk <- enrichKEGG(gene = sig.genes, organism = 'mmu', universe = all.genes)
+enriched.number <- dim(kk)[1]
+enrichment <- as.data.frame(kk)
+write.csv(enrichment, "KEGG/KEGG_enrichment.csv")
+dotplot(kk, showCategory = 20) + labs(title = "KEGG")
+
+pdf("PDF_figure/KEGG.pdf",
+    height = 6,
+    width = 10)
+dotplot(kk, showCategory = 20) + labs(title = "KEGG")
+dev.off()
+```
+
+
+## GSEA Analysis
+```{r}
+rna_quant <-read_csv("normalized_raw_gene_counts.csv")
+colnames(rna_quant)[1] <- "Ensembl_ID"
+
+rna_quant <- left_join(rna_quant, annotations, by = c("Ensembl_ID" = "ENSEMBL"))
+         
+# calculate signal-to-noise ratio for GSEA later
+s2n <- function(num_list, cond_1 = c(4:6), cond_2 = c(1:3)) {
+  mean1 <- mean(as.numeric(num_list[cond_1]))
+  if (mean1 == 0) {
+    mean1 = 1
+  }
+  mean2 <- mean(as.numeric(num_list[cond_2]))
+  if (mean2 == 0) {
+    mean2 = 1
+  }
+  sd1 <- sd(as.numeric(num_list[cond_1]))
+  sd2 <- sd(as.numeric(num_list[cond_2]))
+  sd1 <- min(sd1, 0.2*abs(mean1))
+  sd2 <- min(sd2, 0.2*abs(mean2))
+  s2nvalue <- (mean1-mean2)/(sd1+sd2)
+  return(s2nvalue)
+}  
+
+rna_quant$s2n <- apply(rna_quant,1,s2n,cond_1 = c(6:9),cond_2 = c(2:5))
+
+load("GSEA/mouse_H_v5p2.rdata")
+pathways <- Mm.H
+
+gseadata <- rna_quant$ENTREZID
+gseadata <- gseadata[!is.na(gseadata)]
+ranks <- rna_quant[rna_quant$ENTREZID %in% gseadata, ]$s2n
+names(ranks) <- rna_quant[rna_quant$ENTREZID %in% gseadata, ]$ENTREZID
+ranks <- sort(ranks, decreasing = T)
+fgseaRes <- fgsea(pathways, ranks, minSize=15, maxSize = 500)
+fgseaRes <- fgseaRes[fgseaRes$padj < 0.05,]
+suppressMessages(fgseaRes[, leadingEdge := lapply(leadingEdge, mapIds, x=org.Mm.eg.db, keytype="ENTREZID", column="SYMBOL")])
+fgseaRes$leadingEdge <- as.character(fgseaRes$leadingEdge)
+fgseaRes <- fgseaRes[order(fgseaRes$NES, decreasing = T),]
+write.csv(as.data.frame(fgseaRes), "GSEA/fgsea_Hallmark.csv")
+grid.newpage()
+plotGseaTable(pathways[fgseaRes$pathway], ranks, fgseaRes, gseaParam = 0.5) 
+
+pdf("PDF_figure/GSEA.pdf",
+    height = 10,
+    width = 10)
+grid.newpage()
+plotGseaTable(pathways[fgseaRes$pathway], ranks, fgseaRes, gseaParam = 0.5)
+dev.off()
+
+```
+
+## SessionInfo
+```{r}
+sessionInfo()
+```

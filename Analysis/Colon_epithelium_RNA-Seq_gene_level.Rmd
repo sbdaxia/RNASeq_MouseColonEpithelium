@@ -19,32 +19,29 @@ knitr::opts_chunk$set(echo = TRUE)
 This step is performed on the O2 cluster. The `fastq` file quality was checked using FastQC and MultiQC. They are aligned to Ensembl mm10 genome and counted using Salmon pseudoaligner. Output `sf` files were transfered from O2 to local machine for further processing in R.  
 
 ## Library loading and set up
-```{r}
-options(connectionObserver = NULL)
-
-suppressMessages(
-  c(library(DESeq2),
-    library(tximport),
-    library(gridExtra),
-    library(ensembldb),
-    library(EnsDb.Mmusculus.v79),
-    library(grid),
-    library(ggplot2),
-    library(lattice),
-    library(reshape),
-    library(mixOmics),
-    library(gplots),
-    library(RColorBrewer),
-    library(readr),
-    library(dplyr),
-    library(VennDiagram),
-    library(clusterProfiler),
-    library(DOSE),
-    library(org.Mm.eg.db), 
-    library(pathview),
-    library(AnnotationDbi),
-    library(gtools))
-)
+```{r message=FALSE, warning=FALSE}
+library(DESeq2)
+library(tximport)
+library(gridExtra)
+library(ensembldb)
+library(EnsDb.Mmusculus.v79)
+library(grid)
+library(ggplot2)
+library(lattice)
+library(reshape)
+library(mixOmics)
+library(gplots)
+library(RColorBrewer)
+library(readr)
+library(dplyr)
+library(VennDiagram)
+library(clusterProfiler)
+library(DOSE)
+library(org.Mm.eg.db)
+library(pathview)
+library(AnnotationDbi)
+library(gtools)
+library(enrichplot)
 ```
 
 ## Compile gene count files in DESeq2
@@ -403,7 +400,7 @@ for (i in 1:dim(sig_dif)[1]) {
   sig_dif[i,7:14] <- zscore(as.numeric(sig_dif[i,7:14]))
 }
 
-my_palette <- colorRampPalette(c("red", "white", "blue"))(256)
+my_palette <- colorRampPalette(c("blue", "white", "red"))(256)
 heatmap_matrix <- as.matrix(sig_dif[,7:14])
 
 png('G12D vs WT colon epithelium RNASeq.png',
@@ -637,6 +634,7 @@ Final output is following:
 ##### Biological process
 
 ```{r}
+ego_BP <- pairwise_termsim(ego_BP)
 png('GO/GO enrichment_BP.png',
     width = 1600,
     height = 1600,
@@ -657,6 +655,7 @@ Final output is following:
 ##### Molecular function
 
 ```{r}
+ego_MF <- pairwise_termsim(ego_MF)
 png('GO/GO enrichment_MF.png',
     width = 1600,
     height = 1600,
@@ -677,6 +676,7 @@ Final output is following:
 ##### Cellular component
 
 ```{r}
+ego_CC <- pairwise_termsim(ego_CC)
 png('GO/GO enrichment_CC.png',
     width = 1600,
     height = 1600,
